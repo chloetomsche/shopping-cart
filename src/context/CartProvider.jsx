@@ -2,7 +2,7 @@ import CartContext from "./CartContext";
 import { useReducer, useMemo } from "react";
 function CartProvider({ children }) {
   //function reducer(state, action) {if action is this, then change the state to new state}
-  const initialCartState = { items: [], coupon: 1 };
+  const initialCartState = { items: [], coupon: null };
   const [state, dispatch] = useReducer(reducer, initialCartState);
 
   //all the different actions to update state
@@ -20,10 +20,12 @@ function CartProvider({ children }) {
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             ),
+            coupon: null,
           };
         }
         return {
           items: [...cartState.items, { ...action.payload, quantity: 1 }],
+          coupon: null,
         };
 
       case "REMOVE_ITEM":
@@ -38,6 +40,7 @@ function CartProvider({ children }) {
               items: cartState.items.filter(
                 (item) => item.id !== action.payload.id
               ),
+              coupon: null,
             };
           } else {
             return {
@@ -46,6 +49,7 @@ function CartProvider({ children }) {
                   ? { ...item, quantity: item.quantity - 1 }
                   : item
               ),
+              coupon: null,
             };
           }
         } else {
@@ -57,8 +61,15 @@ function CartProvider({ children }) {
         if (cartState.items) {
           return {
             items: [],
+            coupon: null,
           };
         }
+
+      case "APPLY_COUPON":
+        return {
+          ...cartState,
+          coupon: action.payload,
+        };
 
       default:
         return cartState;
@@ -90,6 +101,7 @@ function CartProvider({ children }) {
     }
     return (subTotal * state.coupon) / 100;
   }, [state.coupon, subTotal]);
+
 
   const value = { state, dispatch, cartCount, subTotal, discount };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
